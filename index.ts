@@ -2,20 +2,21 @@ import { PrismaClient } from "@prisma/client";
 import { v4 } from "uuid";
 import { DateTime } from "luxon";
 import express from "express";
-const cors = require("cors");
 const app = express();
+const cors = require("cors");
 const PORT = 3000;
 
-const corsOptions = {
-  origin: "http://localhost:8080",
-  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
+app.use(
+  cors({
+    origin: ["http://localhost", "http://localhost:8080"],
+  })
+);
 
-app.get("/", cors(corsOptions), async (req, res) => {
+app.get("/", async (req, res) => {
   res.send("hi");
 });
 
-app.get("/reminders", cors(corsOptions), async (req, res) => {
+app.get("/reminders", async (req, res) => {
   console.log("called");
   const { email } = req.query;
   const user = await GetUser(email as string);

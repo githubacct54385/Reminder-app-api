@@ -98,27 +98,27 @@ app.listen(PORT, () => {
 //   console.dir(allUsers, { depth: null });
 // }
 
-const createUser = async (nowUtc: Date, email: string, name: string) => {
-  const prisma = new PrismaClient();
-  await prisma.user.create({
-    data: {
-      id: v4(),
-      email,
-      name,
-      created_at_utc: nowUtc,
-    },
-  });
-};
+// const createUser = async (nowUtc: Date, email: string, name: string) => {
+//   const prisma = new PrismaClient();
+//   await prisma.user.create({
+//     data: {
+//       id: v4(),
+//       email,
+//       name,
+//       created_at_utc: nowUtc,
+//     },
+//   });
+// };
 
-const GetUser = async (email: string) => {
-  const prisma = new PrismaClient();
-  return prisma.user.findFirst({
-    where: { email },
-    include: {
-      reminders: true,
-    },
-  });
-};
+// const GetUser = async (email: string) => {
+//   const prisma = new PrismaClient();
+//   return prisma.user.findFirst({
+//     where: { email },
+//     include: {
+//       reminders: true,
+//     },
+//   });
+// };
 
 // const CreateReminder = async (
 //   nowUtc: Date,

@@ -6,42 +6,69 @@ import express from "express";
 const app = express();
 const cors = require("cors");
 import { expressjwt, Request as JWTRequest } from "express-jwt";
+import { exit } from "process";
 const jwks = require("jwks-rsa");
+require("dotenv").config({ path: "./.env" });
 
 const PORT = process.env.PORT || 3000;
+
+const prisma = new PrismaClient();
 
 const jwtCheck = expressjwt({
   secret: jwks.expressJwtSecret({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: "https://dev-mrtdtl5v5f22pdok.us.auth0.com/.well-known/jwks.json",
+    jwksUri: process.env.JWKSURI,
   }),
-  audience: "https://reminders-api",
-  issuer: "https://dev-mrtdtl5v5f22pdok.us.auth0.com/",
+  audience: process.env.AUDIENCE,
+  issuer: process.env.ISSUER,
   algorithms: ["RS256"],
 });
 
 app.use(jwtCheck);
+
+const origins = process.env.ORIGINS;
+if (!origins) {
+  console.error(
+    `Origins value cannot be undefined.  Origins should be a comma-separated list of origins.  Please fix.`
+  );
+  exit(1);
+}
+const splitOrigins = origins.split(",");
 app.use(
   cors({
-    origin: ["http://localhost", "http://localhost:8080"],
+    origin: splitOrigins,
   })
 );
+// For parsing application/json
+app.use(express.json());
 
-app.get("/", async (req, res) => {
-  res.send("hi");
-});
-
-app.get("/reminders", async (req, res) => {
-  console.log("called");
-  const { email } = req.query;
-  const user = await GetUser(email as string);
-  res.json(user);
-});
+// For parsing application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
 
 app.post("/reminders", async (req, res) => {
-  res.send(req.body);
+  const remindersForUser = await prisma.reminder.findMany({
+    where: {
+      creator: {
+        email: req.body.email,
+      },
+    },
+  });
+  res.json(remindersForUser);
+});
+
+app.post("/user-creation", async (req, res) => {
+  const { email, name } = req.body;
+  const user = await prisma.user.create({
+    data: {
+      created_at_utc: DateTime.utc().toJSDate(),
+      email,
+      id: v4(),
+      name,
+    },
+  });
+  res.json(user);
 });
 
 app.listen(PORT, () => {

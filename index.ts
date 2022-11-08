@@ -1,32 +1,60 @@
 import { PrismaClient } from "@prisma/client";
 import { v4 } from "uuid";
 import { DateTime } from "luxon";
+import express from "express";
+const cors = require("cors");
+const app = express();
+const PORT = 3000;
 
-const prisma = new PrismaClient();
-// npx prisma migrate dev --name init
-async function main() {
-  // await prisma.reminder.deleteMany();
-  // await prisma.user.deleteMany();
+const corsOptions = {
+  origin: "http://localhost:8080",
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
 
-  const nowUtc = DateTime.utc().toJSDate();
+app.get("/", cors(corsOptions), async (req, res) => {
+  res.send("hi");
+});
 
-  //await createUser(nowUtc);
+app.get("/reminders", cors(corsOptions), async (req, res) => {
+  console.log("called");
+  const { email } = req.query;
+  const user = await GetUser(email as string);
+  res.json(user);
+});
 
-  //const foundUser = await GetUser("alexbarke002@gmail.com");
+app.post("/reminders", async (req, res) => {
+  res.send(req.body);
+});
 
-  // await CreateReminder(
-  //   nowUtc,
-  //   foundUser?.id ?? "",
-  //   "Walk the dog",
-  //   3,
-  //   DateTime.utc(2022, 10, 8, 3).toJSDate()
-  // );
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`);
+});
 
-  const allUsers = await GetAllUsersAndReminders();
-  console.dir(allUsers, { depth: null });
-}
+// // npx prisma migrate dev --name init
+// async function main() {
+//   // await prisma.reminder.deleteMany();
+//   // await prisma.user.deleteMany();
+
+//   const nowUtc = DateTime.utc().toJSDate();
+
+//   //await createUser(nowUtc);
+
+//   //const foundUser = await GetUser("alexbarke002@gmail.com");
+
+//   // await CreateReminder(
+//   //   nowUtc,
+//   //   foundUser?.id ?? "",
+//   //   "Walk the dog",
+//   //   3,
+//   //   DateTime.utc(2022, 10, 8, 3).toJSDate()
+//   // );
+
+//   const allUsers = await GetAllUsersAndReminders();
+//   console.dir(allUsers, { depth: null });
+// }
 
 const createUser = async (nowUtc: Date, email: string, name: string) => {
+  const prisma = new PrismaClient();
   await prisma.user.create({
     data: {
       id: v4(),
@@ -38,45 +66,46 @@ const createUser = async (nowUtc: Date, email: string, name: string) => {
 };
 
 const GetUser = async (email: string) => {
+  const prisma = new PrismaClient();
   return prisma.user.findFirst({
-    where: { email: "alexbarke002@gmail.com" },
+    where: { email },
     include: {
       reminders: true,
     },
   });
 };
 
-const CreateReminder = async (
-  nowUtc: Date,
-  userId: string,
-  content: string,
-  leadHours: number,
-  dateDateUtc: Date
-) => {
-  await prisma.reminder.create({
-    data: {
-      id: v4(),
-      created_at_utc: nowUtc,
-      due_date_utc: dateDateUtc,
-      due_date_lead_hours: leadHours,
-      creator_id: userId,
-      content,
-    },
-  });
-};
-const GetAllUsersAndReminders = async () =>
-  prisma.user.findMany({
-    include: {
-      reminders: true,
-    },
-  });
+// const CreateReminder = async (
+//   nowUtc: Date,
+//   userId: string,
+//   content: string,
+//   leadHours: number,
+//   dateDateUtc: Date
+// ) => {
+//   await prisma.reminder.create({
+//     data: {
+//       id: v4(),
+//       created_at_utc: nowUtc,
+//       due_date_utc: dateDateUtc,
+//       due_date_lead_hours: leadHours,
+//       creator_id: userId,
+//       content,
+//     },
+//   });
+// };
+// const GetAllUsersAndReminders = async () =>
+//   prisma.user.findMany({
+//     include: {
+//       reminders: true,
+//     },
+//   });
 
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+// main()
+//   .then(async () => {
+//     await prisma.$disconnect();
+//   })
+//   .catch(async (e) => {
+//     console.error(e);
+//     await prisma.$disconnect();
+//     process.exit(1);
+//   });

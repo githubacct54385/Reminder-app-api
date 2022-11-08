@@ -1,11 +1,28 @@
 import { PrismaClient } from "@prisma/client";
 import { v4 } from "uuid";
 import { DateTime } from "luxon";
+
 import express from "express";
 const app = express();
 const cors = require("cors");
-const PORT = 3000;
+import { expressjwt, Request as JWTRequest } from "express-jwt";
+const jwks = require("jwks-rsa");
 
+const PORT = process.env.PORT || 3000;
+
+const jwtCheck = expressjwt({
+  secret: jwks.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: "https://dev-mrtdtl5v5f22pdok.us.auth0.com/.well-known/jwks.json",
+  }),
+  audience: "https://reminders-api",
+  issuer: "https://dev-mrtdtl5v5f22pdok.us.auth0.com/",
+  algorithms: ["RS256"],
+});
+
+app.use(jwtCheck);
 app.use(
   cors({
     origin: ["http://localhost", "http://localhost:8080"],

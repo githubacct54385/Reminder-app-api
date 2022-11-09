@@ -1,5 +1,3 @@
-import { PrismaClient } from "@prisma/client";
-
 import express from "express";
 const reminders = require("./routes/reminders");
 const app = express();

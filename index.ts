@@ -1,18 +1,15 @@
 import { PrismaClient } from "@prisma/client";
-import { v4 } from "uuid";
-import { DateTime } from "luxon";
 
 import express from "express";
+const reminders = require("./routes/reminders");
 const app = express();
 const cors = require("cors");
-import { expressjwt, Request as JWTRequest } from "express-jwt";
+import { expressjwt } from "express-jwt";
 import { exit } from "process";
 const jwks = require("jwks-rsa");
 require("dotenv").config({ path: "./.env" });
 
 const PORT = process.env.PORT || 3000;
-
-const prisma = new PrismaClient();
 
 const jwtCheck = expressjwt({
   secret: jwks.expressJwtSecret({
@@ -46,30 +43,36 @@ app.use(express.json());
 
 // For parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+app.use("/reminders", reminders);
 
-app.post("/reminders", async (req, res) => {
-  const remindersForUser = await prisma.reminder.findMany({
-    where: {
-      creator: {
-        email: req.body.email,
-      },
-    },
-  });
-  res.json(remindersForUser);
-});
+// app.post("/reminders", async (req, res) => {
+//   const remindersForUser = await prisma.reminder.findMany({
+//     where: {
+//       creator: {
+//         email: req.body.email,
+//       },
+//     },
+//   });
+//   res.json(remindersForUser);
+// });
 
-app.post("/user-creation", async (req, res) => {
-  const { email, name } = req.body;
-  const user = await prisma.user.create({
-    data: {
-      created_at_utc: DateTime.utc().toJSDate(),
-      email,
-      id: v4(),
-      name,
-    },
-  });
-  res.json(user);
-});
+// app.get("/users", async (req, res) => {
+//   const users = await prisma.user.findMany();
+//   res.json(users);
+// });
+
+// app.post("/user-creation", async (req, res) => {
+//   const { email, name } = req.body;
+//   const user = await prisma.user.create({
+//     data: {
+//       created_at_utc: DateTime.utc().toJSDate(),
+//       email,
+//       id: v4(),
+//       name,
+//     },
+//   });
+//   res.json(user);
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);

@@ -1,11 +1,11 @@
 import express from "express";
+const jwks = require("jwks-rsa");
+require("dotenv").config({ path: "./.env" });
+import { exit } from "process";
+import { expressjwt } from "express-jwt";
 const reminders = require("./routes/reminders");
 const app = express();
 const cors = require("cors");
-import { expressjwt } from "express-jwt";
-import { exit } from "process";
-const jwks = require("jwks-rsa");
-require("dotenv").config({ path: "./.env" });
 
 const PORT = process.env.PORT || 3000;
 
@@ -38,7 +38,6 @@ app.use(
 );
 // For parsing application/json
 app.use(express.json());
-
 // For parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 app.use("/reminders", reminders);

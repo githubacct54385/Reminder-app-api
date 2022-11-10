@@ -18,7 +18,8 @@ model Reminder {
   created_at_utc DateTime
   updated_at_utc DateTime?
   due_date_utc   DateTime
-  due_date_alert String    @default("None")
+  due_date_alert String    @default("none")
   content        String
   is_completed   Boolean   @default(false)
+  is_deleted     Boolean   @default(false)
 }

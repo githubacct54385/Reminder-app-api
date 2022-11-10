@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { DateTime } from "luxon";
 import { PrismaClient } from "@prisma/client";
+import ReminderDeleteViewModel from "../models/ReminderDeleteViewModel";
 import ReminderServerModel from "../models/ReminderServerModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
@@ -30,6 +31,7 @@ router.get(
       const reminders = await prisma.reminder.findMany({
         where: {
           creator_email: email,
+          is_deleted: false,
         },
         orderBy: [
           {
@@ -117,6 +119,39 @@ router.patch(
       res.status(400).json({
         success: true,
         msg: "toggle reminder action failed",
+        data: null,
+      });
+    }
+  }
+);
+
+router.delete(
+  "/",
+  async (
+    req: Request<unknown, unknown, ReminderDeleteViewModel>,
+    res: Response<ResponseModel<ReminderServerModel>>
+  ) => {
+    try {
+      const { id } = req.body;
+      const reminder = await prisma.reminder.update({
+        where: {
+          id,
+        },
+        data: {
+          is_deleted: true,
+        },
+      });
+
+      res.status(200).json({
+        success: true,
+        msg: "",
+        data: reminder,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({
+        success: true,
+        msg: "delete reminder action failed",
         data: null,
       });
     }

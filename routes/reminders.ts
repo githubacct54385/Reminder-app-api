@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-import { DateTime } from "luxon";
-import { v4 } from "uuid";
 import express, { Request, Response } from "express";
-import ReminderViewModel from "../models/ReminderViewModel";
+import { DateTime } from "luxon";
+import { PrismaClient } from "@prisma/client";
 import ReminderServerModel from "../models/ReminderServerModel";
-import ResponseModel from "../models/ResponseModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
+import ReminderViewModel from "../models/ReminderViewModel";
+import ResponseModel from "../models/ResponseModel";
+import { v4 } from "uuid";
 const router = express.Router();
 
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 router.get(
   "/byEmail/:email",
   async (
-    req: Request<{ email: string }, {}, {}>,
+    req: Request<{ email: string }, unknown, unknown>,
     res: Response<ResponseModel<ReminderServerModel[]>>
   ) => {
     try {
@@ -59,7 +59,7 @@ router.get(
 router.post(
   "/create",
   async (
-    req: Request<{}, {}, ReminderViewModel>,
+    req: Request<unknown, unknown, ReminderViewModel>,
     res: Response<ResponseModel<ReminderServerModel>>
   ) => {
     const { content, email, dueDateUtc, dueDateAlert } = req.body;
@@ -93,7 +93,7 @@ router.post(
 router.patch(
   "/toggleIsCompleted",
   async (
-    req: Request<{}, {}, ReminderToggleViewModel>,
+    req: Request<unknown, unknown, ReminderToggleViewModel>,
     res: Response<ResponseModel<ReminderServerModel>>
   ) => {
     try {

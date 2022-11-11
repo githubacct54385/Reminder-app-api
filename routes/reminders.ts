@@ -12,6 +12,10 @@ const router = express.Router();
 
 const prisma = new PrismaClient();
 
+router.get("/", (req, res) => {
+  res.status(200).send("hello");
+});
+
 // get all reminders by user email
 router.get(
   "/byEmail/:email",

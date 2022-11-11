@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { DateTime } from "luxon";
 import { PrismaClient } from "@prisma/client";
 import ReminderDeleteViewModel from "../models/ReminderDeleteViewModel";
+import ReminderSendDueViewModel from "../models/ReminderSendDueViewModel";
 import ReminderServerModel from "../models/ReminderServerModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
@@ -153,6 +154,80 @@ router.delete(
         success: true,
         msg: "delete reminder action failed",
         data: null,
+      });
+    }
+  }
+);
+
+router.post(
+  "/send-due",
+  async (
+    req: Request<unknown, unknown, ReminderSendDueViewModel>,
+    res: Response<ResponseModel<ReminderServerModel[]>>
+  ) => {
+    try {
+      const { reminderIdArray } = req.body;
+      const remindersDueToSend = await prisma.reminder.findMany({
+        where: {
+          id: {
+            in: reminderIdArray,
+          },
+          is_deleted: false,
+          is_completed: false,
+        },
+      });
+
+      if (!remindersDueToSend || !remindersDueToSend.some((x) => x)) {
+        res.status(404).json({
+          success: false,
+          msg: "Could not find due reminders to send",
+          data: [],
+        });
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({
+        success: false,
+        msg: "Error while sending due reminders",
+        data: [],
+      });
+    }
+  }
+);
+
+router.get(
+  "/due-reminders",
+  async (
+    _: Request<unknown, unknown, unknown>,
+    res: Response<ResponseModel<ReminderServerModel[]>>
+  ) => {
+    try {
+      const reminders = await prisma.reminder.findMany({
+        where: {
+          is_deleted: false,
+          is_completed: false,
+          due_date_utc: {
+            lt: DateTime.now().toUTC().toJSDate(),
+          },
+        },
+        orderBy: [
+          {
+            due_date_utc: "desc",
+          },
+        ],
+      });
+      res.status(200).json({
+        success: true,
+        msg: "",
+        data: reminders,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({
+        success: false,
+        msg: "Error while getting due reminders",
+        data: [],
       });
     }
   }

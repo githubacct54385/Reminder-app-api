@@ -31,6 +31,7 @@ if (!origins) {
   process.exit(1);
 }
 const splitOrigins = origins.split(",");
+console.log(`allowed origins are ${splitOrigins.join(",")}`);
 app.use(
   cors({
     origin: splitOrigins,

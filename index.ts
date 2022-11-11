@@ -34,7 +34,7 @@ const splitOrigins = origins.split(",");
 console.log(`allowed origins are ${splitOrigins.join(",")}`);
 app.use(
   cors({
-    origin: splitOrigins,
+    origin: "*", //splitOrigins,
   })
 );
 // For parsing application/json

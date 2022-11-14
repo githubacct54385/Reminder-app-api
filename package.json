@@ -6,9 +6,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "compile": "ts-node build.ts && tsc",
-    "dev": "npm run compile && npm run start",
-    "vercel": "vercel dev",
-    "deploy": "vercel deploy --prod"
+    "dev": "npm run compile && npm run start"
   },
   "keywords": [],
   "author": "",

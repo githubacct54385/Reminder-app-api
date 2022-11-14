@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "compile": "ts-node build.ts && tsc",
-    "dev": "npm run compile && npm run start"
+    "compile2": "ts-node index.ts",
+    "dev": "npm run compile2 && npm run start"
   },
   "keywords": [],
   "author": "",

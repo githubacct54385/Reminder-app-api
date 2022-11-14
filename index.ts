@@ -32,3 +32,5 @@ app.use("/reminders", reminders);
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
+
+export default app;

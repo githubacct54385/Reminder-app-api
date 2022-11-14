@@ -1,17 +1,18 @@
 {
   "version": 2,
-  "buildCommand": "npm run compile2",
-  "outputDirectory": "dist",
+  "devCommand": "npm run start",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
   "builds": [
     {
-      "src": "dist/index.js",
-      "use": "@now/node"
+      "src": "index.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/index.js"
+      "dest": "/"
     }
   ]
 }

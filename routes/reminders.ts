@@ -1,20 +1,20 @@
 import express, { Request, Response } from "express";
 import { DateTime } from "luxon";
 import { PrismaClient } from "@prisma/client";
+import RecipientEmailModel from "../models/RecipientEmailModel";
 import ReminderDeleteViewModel from "../models/ReminderDeleteViewModel";
-import ReminderSendDueViewModel from "../models/ReminderSendDueViewModel";
+import ReminderSendDueRequestModel from "../models/ReminderSendDueRequestModel";
 import ReminderServerModel from "../models/ReminderServerModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
 import ResponseModel from "../models/ResponseModel";
+import SendEmails from "../sendGridService";
+import SendEmails2 from "../services/sendGridService2";
+import SendEmails3 from "../services/sendGridService3";
 import { v4 } from "uuid";
 const router = express.Router();
 
 const prisma = new PrismaClient();
-
-router.get("/", (req, res) => {
-  res.status(200).send("hello");
-});
 
 // get all reminders by user email
 router.get(
@@ -166,15 +166,15 @@ router.delete(
 router.post(
   "/send-due",
   async (
-    req: Request<unknown, unknown, ReminderSendDueViewModel>,
-    res: Response<ResponseModel<ReminderServerModel[]>>
+    req: Request<unknown, unknown, ReminderSendDueRequestModel>,
+    res: Response<ResponseModel<RecipientEmailModel[]>>
   ) => {
     try {
-      const { reminderIdArray } = req.body;
+      const { reminderIds } = req.body;
       const remindersDueToSend = await prisma.reminder.findMany({
         where: {
           id: {
-            in: reminderIdArray,
+            in: reminderIds,
           },
           is_deleted: false,
           is_completed: false,
@@ -189,6 +189,100 @@ router.post(
         });
         return;
       }
+      const emails = remindersDueToSend.map((r) => {
+        return {
+          id: r.id,
+          email: r.creator_email,
+          content: r.content,
+          dueDateUtc: r.due_date_utc,
+        };
+      });
+      if (!process.env.SENDGRID_API_KEY) {
+        res.status(500).json({
+          success: false,
+          data: [],
+          msg: "",
+        });
+      }
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const client = require("@sendgrid/mail");
+      client.setApiKey(process.env.SENDGRID_API_KEY);
+
+      const fromEmail = "alexbarke002@outlook.com";
+      const toEmail = "alexbarke002@gmail.com";
+
+      const message = {
+        personalizations: [
+          {
+            to: [
+              {
+                email: toEmail,
+              },
+            ],
+          },
+          // {
+          //   from: {
+          //     email: fromEmail,
+          //   },
+          //   to: [
+          //     {
+          //       email: toEmail,
+          //     },
+          //   ],
+          // },
+        ],
+        from: {
+          email: fromEmail,
+        },
+        replyTo: {
+          email: fromEmail,
+        },
+        subject: "Reminder API",
+        content: [
+          {
+            type: "text/html",
+            value:
+              "<p>Hello from Twilio SendGrid!</p><p>Sending with the email service trusted by developers and marketers for <strong>time-savings</strong>, <strong>scalability</strong>, and <strong>delivery expertise</strong>.</p><p>%open-track%</p>",
+          },
+        ],
+      };
+
+      client
+        .send(message)
+        .then((response: any) => {
+          console.log(`Mail sent successfully with res ${response}`);
+          res.status(202).json({
+            data: [],
+            msg: "",
+            success: true,
+          });
+        })
+        .catch((error: any) => {
+          console.log(error);
+          // console.error(error.response.body);
+          res.status(400).json({
+            success: false,
+            msg: "Error while sending due reminders",
+            data: [],
+          });
+        });
+      //SendEmails3();
+      // remindersDueToSend.forEach(
+      //   async (r) =>
+      //     await SendEmails2(r.creator_email, r.due_date_utc, r.content)
+      // );
+      //await SendEmails2();
+      // res.status(202).json({
+      //   data: [],
+      //   msg: "",
+      //   success: true,
+      // });
+      //const response = await SendEmails(emails);
+      // res.status(response.success ? 200 : 400).json({
+      //   success: response.success,
+      //   msg: response.success ? "" : "failed to send emails",
+      //   data: response.recipients,
+      // });
     } catch (error) {
       console.error(error);
       res.status(400).json({

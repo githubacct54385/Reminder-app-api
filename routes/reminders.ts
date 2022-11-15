@@ -8,9 +8,7 @@ import ReminderServerModel from "../models/ReminderServerModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
 import ResponseModel from "../models/ResponseModel";
-import SendEmails from "../sendGridService";
-import SendEmails2 from "../services/sendGridService2";
-import SendEmails3 from "../services/sendGridService3";
+import SendEmail from "../services/sendGridService3";
 import { v4 } from "uuid";
 const router = express.Router();
 
@@ -197,75 +195,89 @@ router.post(
           dueDateUtc: r.due_date_utc,
         };
       });
-      if (!process.env.SENDGRID_API_KEY) {
-        res.status(500).json({
-          success: false,
-          data: [],
+      const result = await SendEmail(
+        "alexbarke002@gmail.com",
+        remindersDueToSend[0].due_date_utc,
+        "Walk the dog"
+      );
+      if (result.success) {
+        res.status(202).json({
+          data: [
+            {
+              id: "11111111-1111-1111-1111-111111111111",
+              content: "Walk the dog",
+              dueDateUtc: new Date(Date.UTC(2022, 10, 15, 3, 42)),
+              email: "alexbarke002@gmail.com",
+            },
+          ],
           msg: "",
+          success: true,
+        });
+      } else {
+        res.status(400).json({
+          data: [
+            {
+              id: "11111111-1111-1111-1111-111111111111",
+              content: "Walk the dog",
+              dueDateUtc: new Date(Date.UTC(2022, 10, 15, 3, 42)),
+              email: "alexbarke002@gmail.com",
+            },
+          ],
+          msg: result.msg,
+          success: false,
         });
       }
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const client = require("@sendgrid/mail");
-      client.setApiKey(process.env.SENDGRID_API_KEY);
+      // client.setApiKey(process.env.SENDGRID_API_KEY);
 
-      const fromEmail = "alexbarke002@outlook.com";
-      const toEmail = "alexbarke002@gmail.com";
+      // const fromEmail = "alexbarke002@outlook.com";
+      // const toEmail = "alexbarke002@gmail.com";
 
-      const message = {
-        personalizations: [
-          {
-            to: [
-              {
-                email: toEmail,
-              },
-            ],
-          },
-          // {
-          //   from: {
-          //     email: fromEmail,
-          //   },
-          //   to: [
-          //     {
-          //       email: toEmail,
-          //     },
-          //   ],
-          // },
-        ],
-        from: {
-          email: fromEmail,
-        },
-        replyTo: {
-          email: fromEmail,
-        },
-        subject: "Reminder API",
-        content: [
-          {
-            type: "text/html",
-            value:
-              "<p>Hello from Twilio SendGrid!</p><p>Sending with the email service trusted by developers and marketers for <strong>time-savings</strong>, <strong>scalability</strong>, and <strong>delivery expertise</strong>.</p><p>%open-track%</p>",
-          },
-        ],
-      };
+      // const myContent: MailContent[] & { 0: MailContent } = [
+      //   {
+      //     type: "text/html",
+      //     value: "<p>Hello my name is alex barke.</p>",
+      //   },
+      // ];
 
-      client
-        .send(message)
-        .then((response: any) => {
-          console.log(`Mail sent successfully with res ${response}`);
-          res.status(202).json({
-            data: [],
-            msg: "",
-            success: true,
-          });
-        })
-        .catch((error: any) => {
-          console.log(error);
-          // console.error(error.response.body);
-          res.status(400).json({
-            success: false,
-            msg: "Error while sending due reminders",
-            data: [],
-          });
-        });
+      // const message = {
+      //   personalizations: [
+      //     {
+      //       to: [
+      //         {
+      //           email: toEmail,
+      //         },
+      //       ],
+      //     },
+      //   ],
+      //   from: {
+      //     email: fromEmail,
+      //   },
+      //   replyTo: {
+      //     email: fromEmail,
+      //   },
+      //   subject: "Reminder API",
+      //   content: myContent,
+      // };
+
+      // client
+      //   .send(message)
+      //   .then((response: any) => {
+      //     console.log(`Mail sent successfully with res ${response}`);
+      //     res.status(202).json({
+      //       data: [],
+      //       msg: "",
+      //       success: true,
+      //     });
+      //   })
+      //   .catch((error: any) => {
+      //     console.log(error);
+      //     // console.error(error.response.body);
+      //     res.status(400).json({
+      //       success: false,
+      //       msg: "Error while sending due reminders",
+      //       data: [],
+      //     });
+      //   });
       //SendEmails3();
       // remindersDueToSend.forEach(
       //   async (r) =>

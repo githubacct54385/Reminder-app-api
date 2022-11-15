@@ -1,32 +1,80 @@
-export default function () {
-  if (!process.env.SENDGRID_API_KEY) {
-    throw new Error("SENDGRID_API_KEY must be defined.");
-  }
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const client = require("@sendgrid/mail");
-  client.setApiKey(process.env.SENDGRID_API_KEY);
+import { DateTime } from "luxon";
+import { MailContent } from "@sendgrid/helpers/classes/mail";
+import client from "@sendgrid/mail";
 
+type SendEmailResult = {
+  success: boolean;
+  msg: string;
+};
+
+const SendEmail = async (
+  to: string,
+  dueDate: Date,
+  content: string
+): Promise<SendEmailResult> => {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.error("SENDGRID_API_KEY is missing from environment variables");
+    return {
+      msg: "failed to send email",
+      success: false,
+    };
+  }
+  client.setApiKey(process.env.SENDGRID_API_KEY);
+  if (!process.env.SENDGRID_VERIFIED_SENDER) {
+    console.error(
+      "SENDGRID_VERIFIED_SENDER is missing from environment variables"
+    );
+    return {
+      msg: "failed to send email",
+      success: false,
+    };
+  }
+  const myContent: MailContent[] & { 0: MailContent } = [
+    {
+      type: "text/html",
+      value: `<p>You have a due reminder.</p><p>Due Date: ${DateTime.fromJSDate(
+        dueDate
+      ).toLocaleString(DateTime.DATETIME_MED)}</p><p>Content: ${content}</p>`,
+    },
+  ];
   const message = {
-    from: {
-      email: "alexbarke002@outlook.com",
-    },
-    replyTo: {
-      email: "alexbarke002@outlook.com",
-    },
-    subject: "Reminder API",
-    content: [
+    personalizations: [
       {
-        type: "text/html",
-        value:
-          "<p>Hello from Twilio SendGrid!</p><p>Sending with the email service trusted by developers and marketers for <strong>time-savings</strong>, <strong>scalability</strong>, and <strong>delivery expertise</strong>.</p><p>%open-track%</p>",
+        to: [
+          {
+            email: to,
+          },
+        ],
       },
     ],
+    from: {
+      email: process.env.SENDGRID_VERIFIED_SENDER,
+    },
+    replyTo: {
+      email: process.env.SENDGRID_VERIFIED_SENDER,
+    },
+    subject: "Reminder API -- Due Reminder",
+    content: myContent,
   };
+  try {
+    const res = await client.send(message);
+    if (res?.[0]?.statusCode === 202) {
+      return {
+        success: true,
+        msg: "",
+      };
+    }
+    return {
+      msg: "failed to send email",
+      success: false,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      msg: "failed to send email",
+      success: false,
+    };
+  }
+};
 
-  client
-    .send(message)
-    .then((res: any) => console.log(`Mail sent successfully with res ${res}`))
-    .catch((error: any) => {
-      console.log(error);
-    });
-}
+export default SendEmail;

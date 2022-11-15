@@ -175,6 +175,9 @@ router.post(
           id: {
             in: reminderIds,
           },
+          due_date_utc: {
+            lt: DateTime.now().toUTC().toJSDate(),
+          },
           is_deleted: false,
           is_completed: false,
         },

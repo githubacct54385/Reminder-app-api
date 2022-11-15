@@ -22,5 +22,5 @@ model Reminder {
   content        String
   is_completed   Boolean   @default(false)
   is_deleted     Boolean   @default(false)
-  utc_offset     Int       @default(0)
+  utc_offset     Int
 }

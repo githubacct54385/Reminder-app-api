@@ -7,3 +7,13 @@ Content-Type: application/json
         "784c9118-fd39-44c1-add2-397fcba2d632"
     ]
 }
+
+# POST https://reminder-app-api.vercel.app/reminders/send-due
+# Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImFTOWNGSWpfYUFNdU4zbWJTZG5pZCJ9.eyJpc3MiOiJodHRwczovL2Rldi1tcnRkdGw1djVmMjJwZG9rLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw2MzY4Yjk5NGFlOGVkNTA1ZjM2ZWRlMTMiLCJhdWQiOlsiaHR0cHM6Ly9yZW1pbmRlcnMtYXBpIiwiaHR0cHM6Ly9kZXYtbXJ0ZHRsNXY1ZjIycGRvay51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjY4NDg0ODk3LCJleHAiOjE2Njg1NzEyOTcsImF6cCI6Im5Ga0xiQlVtV2JtZVpVSzNtME5Qbno3SzRVU2c1YXNIIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCJ9.GvA4EklP8e80SjAJVgqfSRGnB59kOewPrdgBo-SZToBWsnw__jxdR_MDkAGF9HrQFIsXlSeDfdKe_cXPY7fO6Sh00eVD_OUnqyTtANvUAeoruE10EPMsOjOizuPPeTTclnA7n6jHl3hy7O6UO721BMV4qlXNXVqwd6fsF6aGa1tf6Z1iHMC6U4nhNNmJHf97iirKwUAE2jPLz4v6xC_UIp008KX-LH8pabMJSdxoi48sMhIbcVuJ-S6eEP41raySpsPLUQaAKTU1L2fTdNBgNOnSZAc-USKzkzNgfu4YL_AZKa9Y0CBEg0ns6zWQ8WB9og_IjWqGiQ-2kVp0XJzRRg
+# Content-Type: application/json
+
+# {
+#     "reminderIds": [
+#         "784c9118-fd39-44c1-add2-397fcba2d632"
+#     ]
+# }

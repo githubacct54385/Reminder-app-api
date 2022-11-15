@@ -67,7 +67,7 @@ router.post(
     req: Request<unknown, unknown, ReminderViewModel>,
     res: Response<ResponseModel<ReminderServerModel>>
   ) => {
-    const { content, email, dueDateUtc, dueDateAlert } = req.body;
+    const { content, email, dueDateUtc, dueDateAlert, utcOffset } = req.body;
     try {
       const reminder = await prisma.reminder.create({
         data: {
@@ -77,6 +77,7 @@ router.post(
           due_date_utc: dueDateUtc,
           id: v4(),
           due_date_alert: dueDateAlert ?? "None",
+          utc_offset: utcOffset,
         },
       });
       res.status(201).json({
@@ -193,108 +194,32 @@ router.post(
           email: r.creator_email,
           content: r.content,
           dueDateUtc: r.due_date_utc,
+          due_offset: r.utc_offset,
         };
       });
-      const result = await SendEmail(
-        "alexbarke002@gmail.com",
-        remindersDueToSend[0].due_date_utc,
-        "Walk the dog"
+      const promiseArray = await Promise.all(
+        emails.map(async (e) => {
+          return await SendEmail(
+            e.email,
+            e.dueDateUtc,
+            e.content,
+            e.due_offset
+          );
+        })
       );
-      if (result.success) {
+      if (promiseArray.every((p) => p.success)) {
         res.status(202).json({
-          data: [
-            {
-              id: "11111111-1111-1111-1111-111111111111",
-              content: "Walk the dog",
-              dueDateUtc: new Date(Date.UTC(2022, 10, 15, 3, 42)),
-              email: "alexbarke002@gmail.com",
-            },
-          ],
+          data: emails,
           msg: "",
           success: true,
         });
       } else {
         res.status(400).json({
-          data: [
-            {
-              id: "11111111-1111-1111-1111-111111111111",
-              content: "Walk the dog",
-              dueDateUtc: new Date(Date.UTC(2022, 10, 15, 3, 42)),
-              email: "alexbarke002@gmail.com",
-            },
-          ],
-          msg: result.msg,
+          data: emails,
+          msg: promiseArray[0].msg,
           success: false,
         });
       }
-      // client.setApiKey(process.env.SENDGRID_API_KEY);
-
-      // const fromEmail = "alexbarke002@outlook.com";
-      // const toEmail = "alexbarke002@gmail.com";
-
-      // const myContent: MailContent[] & { 0: MailContent } = [
-      //   {
-      //     type: "text/html",
-      //     value: "<p>Hello my name is alex barke.</p>",
-      //   },
-      // ];
-
-      // const message = {
-      //   personalizations: [
-      //     {
-      //       to: [
-      //         {
-      //           email: toEmail,
-      //         },
-      //       ],
-      //     },
-      //   ],
-      //   from: {
-      //     email: fromEmail,
-      //   },
-      //   replyTo: {
-      //     email: fromEmail,
-      //   },
-      //   subject: "Reminder API",
-      //   content: myContent,
-      // };
-
-      // client
-      //   .send(message)
-      //   .then((response: any) => {
-      //     console.log(`Mail sent successfully with res ${response}`);
-      //     res.status(202).json({
-      //       data: [],
-      //       msg: "",
-      //       success: true,
-      //     });
-      //   })
-      //   .catch((error: any) => {
-      //     console.log(error);
-      //     // console.error(error.response.body);
-      //     res.status(400).json({
-      //       success: false,
-      //       msg: "Error while sending due reminders",
-      //       data: [],
-      //     });
-      //   });
-      //SendEmails3();
-      // remindersDueToSend.forEach(
-      //   async (r) =>
-      //     await SendEmails2(r.creator_email, r.due_date_utc, r.content)
-      // );
-      //await SendEmails2();
-      // res.status(202).json({
-      //   data: [],
-      //   msg: "",
-      //   success: true,
-      // });
-      //const response = await SendEmails(emails);
-      // res.status(response.success ? 200 : 400).json({
-      //   success: response.success,
-      //   msg: response.success ? "" : "failed to send emails",
-      //   data: response.recipients,
-      // });
     } catch (error) {
       console.error(error);
       res.status(400).json({

@@ -10,7 +10,8 @@ type SendEmailResult = {
 const SendEmail = async (
   to: string,
   dueDate: Date,
-  content: string
+  content: string,
+  dueDateOffset: number
 ): Promise<SendEmailResult> => {
   if (!process.env.SENDGRID_API_KEY) {
     console.error("SENDGRID_API_KEY is missing from environment variables");
@@ -32,9 +33,7 @@ const SendEmail = async (
   const myContent: MailContent[] & { 0: MailContent } = [
     {
       type: "text/html",
-      value: `<p>You have a due reminder.</p><p>Due Date: ${DateTime.fromJSDate(
-        dueDate
-      ).toLocaleString(DateTime.DATETIME_MED)}</p><p>Content: ${content}</p>`,
+      value: EmailContent(dueDateOffset, content, dueDate),
     },
   ];
   const message = {
@@ -75,6 +74,18 @@ const SendEmail = async (
       success: false,
     };
   }
+};
+
+const EmailContent = (
+  dueDateOffset: number,
+  content: string,
+  dueDate: Date
+): string => {
+  return `<p>You have a due reminder.</p><p>Due Date: ${DateTime.fromJSDate(
+    dueDate
+  )
+    .plus({ hours: dueDateOffset })
+    .toLocaleString(DateTime.DATETIME_MED)}</p><p>Content: ${content}</p>`;
 };
 
 export default SendEmail;

@@ -9,4 +9,5 @@ export default interface ReminderServerModel {
   content: string;
   is_completed: boolean;
   is_deleted: boolean;
+  utc_offset: number;
 }

@@ -3,6 +3,7 @@ export default interface ReminderViewModel {
   email: string;
   dueDateUtc: Date;
   dueDateAlert: DueDateOption;
+  utcOffset: number;
 }
 
 type DueDateOption =

@@ -8,7 +8,7 @@ import ReminderServerModel from "../models/ReminderServerModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
 import ResponseModel from "../models/ResponseModel";
-import SendEmail from "../services/sendGridService3";
+import SendEmail from "../services/sendGridService";
 import { v4 } from "uuid";
 const router = express.Router();
 
@@ -206,10 +206,26 @@ router.post(
             e.email,
             e.dueDateUtc,
             e.content,
-            e.due_offset
+            e.due_offset,
+            e.id
           );
         })
       );
+      const sentReminderIds = promiseArray
+        .filter((p) => p.success)
+        .map((q) => q.reminderId);
+
+      await prisma.reminder.updateMany({
+        data: {
+          is_completed: true,
+        },
+        where: {
+          id: {
+            in: sentReminderIds,
+          },
+        },
+      });
+
       if (promiseArray.every((p) => p.success)) {
         res.status(202).json({
           data: emails,

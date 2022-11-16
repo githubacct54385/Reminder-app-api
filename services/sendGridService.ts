@@ -5,19 +5,22 @@ import client from "@sendgrid/mail";
 type SendEmailResult = {
   success: boolean;
   msg: string;
+  reminderId: string;
 };
 
 const SendEmail = async (
   to: string,
   dueDate: Date,
   content: string,
-  dueDateOffset: number
+  dueDateOffset: number,
+  reminderId: string
 ): Promise<SendEmailResult> => {
   if (!process.env.SENDGRID_API_KEY) {
     console.error("SENDGRID_API_KEY is missing from environment variables");
     return {
       msg: "failed to send email",
       success: false,
+      reminderId,
     };
   }
   client.setApiKey(process.env.SENDGRID_API_KEY);
@@ -28,6 +31,7 @@ const SendEmail = async (
     return {
       msg: "failed to send email",
       success: false,
+      reminderId,
     };
   }
   const myContent: MailContent[] & { 0: MailContent } = [
@@ -61,17 +65,20 @@ const SendEmail = async (
       return {
         success: true,
         msg: "",
+        reminderId,
       };
     }
     return {
       msg: "failed to send email",
       success: false,
+      reminderId,
     };
   } catch (error) {
     console.error(error);
     return {
       msg: "failed to send email",
       success: false,
+      reminderId,
     };
   }
 };

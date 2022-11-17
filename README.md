@@ -9,6 +9,8 @@ Using Prisma as a type-safe ORM.
 
 Database is Postgres.
 
+Sends emails using SendGrid.
+
 # Environment Variables for local development
 Please add a file `.env` into the root.  Put the following variables in there
 ```env

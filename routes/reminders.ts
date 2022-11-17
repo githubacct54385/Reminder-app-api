@@ -9,6 +9,7 @@ import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
 import ResponseModel from "../models/ResponseModel";
 import SendEmail from "../services/sendGridService";
+import Validate from "../services/createReminderValidation";
 import { v4 } from "uuid";
 const router = express.Router();
 
@@ -67,22 +68,31 @@ router.post(
     req: Request<unknown, unknown, ReminderViewModel>,
     res: Response<ResponseModel<ReminderServerModel>>
   ) => {
+    const validate = Validate(req.body);
+    if (validate) {
+      res.status(400).json({
+        data: null,
+        msg: validate,
+        success: false,
+      });
+      return;
+    }
     const { content, email, dueDateUtc, dueDateAlert, utcOffset } = req.body;
     try {
-      const reminder = await prisma.reminder.create({
-        data: {
-          content,
-          created_at_utc: DateTime.utc().toJSDate(),
-          creator_email: email,
-          due_date_utc: dueDateUtc,
-          id: v4(),
-          due_date_alert: dueDateAlert ?? "None",
-          utc_offset: utcOffset,
-        },
-      });
+      // const reminder = await prisma.reminder.create({
+      //   data: {
+      //     content,
+      //     created_at_utc: DateTime.utc().toJSDate(),
+      //     creator_email: email,
+      //     due_date_utc: dueDateUtc,
+      //     id: v4(),
+      //     due_date_alert: dueDateAlert ?? "None",
+      //     utc_offset: utcOffset,
+      //   },
+      // });
       res.status(201).json({
         success: true,
-        data: reminder,
+        data: null,
         msg: "",
       });
     } catch (error) {

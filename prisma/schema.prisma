@@ -19,7 +19,7 @@ model Reminder {
   updated_at_utc DateTime?
   due_date_utc   DateTime
   due_date_alert String    @default("none")
-  content        String
+  content        String    @db.Char(50)
   is_completed   Boolean   @default(false)
   is_deleted     Boolean   @default(false)
   utc_offset     Int

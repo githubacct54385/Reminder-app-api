@@ -52,7 +52,7 @@ router.get(
       });
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: false,
         msg: "Error while getting reminders by email",
         data: [],
@@ -87,7 +87,7 @@ router.post(
       });
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: false,
         data: null,
         msg: `failed to create reminder due to internal error.`,
@@ -120,7 +120,7 @@ router.patch(
       });
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: true,
         msg: "toggle reminder action failed",
         data: null,
@@ -144,7 +144,7 @@ router.delete(
       });
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: true,
         msg: "delete reminder action failed",
         data: null,
@@ -171,7 +171,7 @@ router.patch(
       });
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: true,
         msg: "restore reminder action failed",
         data: null,
@@ -259,7 +259,7 @@ router.post(
       }
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: false,
         msg: "Error while sending due reminders",
         data: [],
@@ -296,7 +296,7 @@ router.get(
       });
     } catch (error) {
       console.error(error);
-      res.status(400).json({
+      res.status(500).json({
         success: false,
         msg: "Error while getting due reminders",
         data: [],

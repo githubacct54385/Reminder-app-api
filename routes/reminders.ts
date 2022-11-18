@@ -2,9 +2,9 @@ import express, { Request, Response } from "express";
 import { DateTime } from "luxon";
 import { PrismaClient } from "@prisma/client";
 import RecipientEmailModel from "../models/RecipientEmailModel";
-import ReminderDeleteViewModel from "../models/ReminderDeleteViewModel";
 import ReminderSendDueRequestModel from "../models/ReminderSendDueRequestModel";
 import ReminderServerModel from "../models/ReminderServerModel";
+import ReminderToggleDeleteViewModel from "../models/ReminderToggleDeleteViewModel";
 import ReminderToggleViewModel from "../models/ReminderToggleViewModel";
 import ReminderViewModel from "../models/ReminderViewModel";
 import ResponseModel from "../models/ResponseModel";
@@ -132,20 +132,11 @@ router.patch(
 router.delete(
   "/",
   async (
-    req: Request<unknown, unknown, ReminderDeleteViewModel>,
+    req: Request<unknown, unknown, ReminderToggleDeleteViewModel>,
     res: Response<ResponseModel<ReminderServerModel>>
   ) => {
     try {
-      const { id } = req.body;
-      const reminder = await prisma.reminder.update({
-        where: {
-          id,
-        },
-        data: {
-          is_deleted: true,
-        },
-      });
-
+      const reminder = await toggleDeleteStatus(DeleteFlag.Delete, req.body.id);
       res.status(200).json({
         success: true,
         msg: "",
@@ -156,6 +147,33 @@ router.delete(
       res.status(400).json({
         success: true,
         msg: "delete reminder action failed",
+        data: null,
+      });
+    }
+  }
+);
+
+router.patch(
+  "/restore",
+  async (
+    req: Request<unknown, unknown, ReminderToggleDeleteViewModel>,
+    res: Response<ResponseModel<ReminderServerModel>>
+  ) => {
+    try {
+      const reminder = await toggleDeleteStatus(
+        DeleteFlag.Restore,
+        req.body.id
+      );
+      res.status(200).json({
+        success: true,
+        msg: "",
+        data: reminder,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({
+        success: true,
+        msg: "restore reminder action failed",
         data: null,
       });
     }
@@ -286,5 +304,24 @@ router.get(
     }
   }
 );
+
+enum DeleteFlag {
+  Delete,
+  Restore,
+}
+
+const toggleDeleteStatus = async (
+  deleteStatus: DeleteFlag,
+  reminderId: string
+) => {
+  return prisma.reminder.update({
+    where: {
+      id: reminderId,
+    },
+    data: {
+      is_deleted: deleteStatus === DeleteFlag.Delete ? true : false,
+    },
+  });
+};
 
 export default router;
